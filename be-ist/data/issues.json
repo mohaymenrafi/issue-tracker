@@ -1,0 +1,9 @@
+[
+    {
+        "id": "211cc1aa-a682-49e6-8920-688b730af368",
+        "title": "Updated title for the issue, it is patched",
+        "description": "issue needs some description",
+        "priority": "medium",
+        "status": "open"
+    }
+]
