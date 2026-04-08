@@ -1,9 +1,30 @@
 [
     {
         "id": "211cc1aa-a682-49e6-8920-688b730af368",
-        "title": "Updated title for the issue, it is patched",
+        "title": "Solve the pagination issue",
         "description": "issue needs some description",
-        "priority": "medium",
+        "priority": "high",
+        "status": "in_progress"
+    },
+    {
+        "id": "ecf642a1-c47e-4a43-afbf-1ca0459a894a",
+        "title": "Testing new issue",
+        "description": "some issue here",
+        "priority": "high",
+        "status": "open"
+    },
+    {
+        "id": "b256f41e-8d8e-42f3-abbb-f0c565b1d362",
+        "title": "Work on Ipad launch",
+        "description": "Check the implementation, done by jonathan",
+        "priority": "low",
+        "status": "open"
+    },
+    {
+        "id": "01321dcb-5ffb-4bdf-aa0c-c0965b9aafae",
+        "title": "Finish One Topic from React.dev ",
+        "description": "To update the core react knowledge\n",
+        "priority": "high",
         "status": "open"
     }
 ]

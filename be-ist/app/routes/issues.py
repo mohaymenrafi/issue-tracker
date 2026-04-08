@@ -1,16 +1,24 @@
-from fastapi import APIRouter, HTTPException, status
+from fastapi import APIRouter, HTTPException, Request, status
 import uuid
-from app.schemas import IssueCreate, IssueOut, IssueStatus, IssueUpdate
+from app.schemas import IssueCreate, IssueOut, IssuePriority, IssueStatus, IssueUpdate
 from app.storage import load_data, save_data
 
 router = APIRouter(prefix="/api/v1/issues", tags=["issues"])
 
 
 @router.get("/", response_model=list[IssueOut])
-def get_issues():
+def get_issues(status: IssueStatus = None, priority: IssuePriority = None, page: int = 1, limit: int = 10):
     """Retrieves all issues"""
     issues = load_data()
-    return issues
+    start = (page - 1) * limit
+    end = start + limit
+
+    # these query needs to be added to the database later when we connect them
+    if status:
+        issues = [issue for issue in issues if issue["status"] == status]
+    if priority:
+        issues = [issue for issue in issues if issue["priority"] == priority]
+    return issues[start:end]
 
 
 @router.post("/", response_model=IssueOut, status_code=status.HTTP_201_CREATED)
