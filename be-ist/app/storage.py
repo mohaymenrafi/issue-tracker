@@ -1,17 +1,9 @@
 from pathlib import Path
 import json
+from app.config import settings
 
-DATA_DIR = Path("data")
+DATA_DIR = Path(settings.data_dir)
 DATA_FILE = DATA_DIR / "issues.json"
-
-
-# def load_data():
-#     if DATA_FILE.exists():
-#         with open(DATA_FILE, "r") as f:
-#             content = f.read()
-#             if content.strip():
-#                 return json.loads(content)
-#     return []
 
 
 def load_data():
