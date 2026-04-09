@@ -26,5 +26,12 @@
         "description": "To update the core react knowledge\n",
         "priority": "high",
         "status": "open"
+    },
+    {
+        "id": "88692a3d-e2a0-4bf3-af3b-01f334c19b98",
+        "title": "dpe inj 01",
+        "description": "test after adding list di",
+        "priority": "medium",
+        "status": "open"
     }
 ]
