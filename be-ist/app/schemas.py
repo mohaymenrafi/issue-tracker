@@ -1,6 +1,7 @@
 from enum import Enum
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
 from typing import Optional
+from sqlmodel import Field, SQLModel
 
 
 class IssueStatus(str, Enum):
@@ -15,25 +16,29 @@ class IssuePriority(str, Enum):
     high = "high"
 
 
-class IssueCreate(BaseModel):
+class IssueBase(SQLModel):
     title: str = Field(min_length=3, max_length=100,
-                       description="Then title of the issue")
-    description: str = Field(min_length=5, max_length=1000)
-    priority: IssuePriority = IssuePriority.medium
+                       description="The title of the issue")
+    description: str = Field(
+        min_length=5, max_length=1000, description="The description of the issue")
+    priority: IssuePriority = Field(
+        default=IssuePriority.medium, description="The priority of the issue")
+    status: IssueStatus = Field(
+        default=IssueStatus.open, description="The status of the issue")
 
 
-class IssueUpdate(BaseModel):
+class Issue(IssueBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+
+
+class IssueCreate(IssueBase):
+    pass
+
+
+class IssueUpdate(SQLModel):
     title: Optional[str] = Field(default=None, min_length=3, max_length=100,
-                                 description="Then title of the issue")
+                                 description="The title of the issue")
     description: Optional[str] = Field(
         default=None, min_length=5, max_length=1000)
     priority: Optional[IssuePriority] = None
     status: Optional[IssueStatus] = None
-
-
-class IssueOut(BaseModel):
-    id: str
-    title: str
-    description: str
-    priority: IssuePriority
-    status: IssueStatus
