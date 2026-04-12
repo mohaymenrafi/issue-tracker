@@ -1,10 +1,12 @@
 import uvicorn
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.issues import router as issues_router
 from app.middleware.timer import timer_middleware
 from app.config import settings
 from contextlib import asynccontextmanager
+from fastapi.responses import JSONResponse
+from fastapi.exceptions import RequestValidationError
 
 
 @asynccontextmanager
