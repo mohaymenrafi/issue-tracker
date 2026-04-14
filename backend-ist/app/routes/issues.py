@@ -1,9 +1,7 @@
-from fastapi import APIRouter, Depends, HTTPException, Request, status
-import uuid
-from app.schemas import Issue, IssueCreate, IssuePriority, IssueStatus, IssueUpdate
-from app.database import get_session
+from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
-
+from app.database import get_session
+from app.schemas import Issue, IssueCreate, IssuePriority, IssueStatus, IssueUpdate
 
 router = APIRouter(prefix="/api/v1/issues", tags=["issues"])
 
@@ -16,19 +14,20 @@ def get_issue_or_404(issue_id: int, session: Session = Depends(get_session)) -> 
     return issue
 
 
-@router.get("/", response_model=list[Issue])
-def get_issues(status: IssueStatus = None, priority: IssuePriority = None, page: int = 1, limit: int = 10, session: Session = Depends(get_session)):
+@router.get('/', response_model=list[Issue])
+def get_issues(status: IssueStatus = None, priority: IssuePriority = None, limit: int = 10, page: int = 1, session: Session = Depends(get_session)):
     """Retrieves all issues"""
     query = select(Issue)
     if status:
         query = query.where(Issue.status == status)
     if priority:
         query = query.where(Issue.priority == priority)
+
     query = query.offset((page - 1) * limit).limit(limit)
     return session.exec(query).all()
 
 
-@router.post("/", response_model=Issue, status_code=status.HTTP_201_CREATED)
+@router.post('/', response_model=Issue, status_code=status.HTTP_201_CREATED)
 def create_issue(payload: IssueCreate, session: Session = Depends(get_session)):
     """Creates a new issue"""
     new_issue = Issue.model_validate(payload)
