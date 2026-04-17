@@ -14,7 +14,7 @@ def get_issue_or_404(issue_id: int, session: Session = Depends(get_session)) -> 
     return issue
 
 
-@router.get('/', response_model=list[Issue])
+@router.get('', response_model=list[Issue])
 def get_issues(status: IssueStatus = None, priority: IssuePriority = None, limit: int = 10, page: int = 1, session: Session = Depends(get_session)):
     """Retrieves all issues"""
     query = select(Issue)
@@ -27,7 +27,7 @@ def get_issues(status: IssueStatus = None, priority: IssuePriority = None, limit
     return session.exec(query).all()
 
 
-@router.post('/', response_model=Issue, status_code=status.HTTP_201_CREATED)
+@router.post('', response_model=Issue, status_code=status.HTTP_201_CREATED)
 def create_issue(payload: IssueCreate, session: Session = Depends(get_session)):
     """Creates a new issue"""
     new_issue = Issue.model_validate(payload)

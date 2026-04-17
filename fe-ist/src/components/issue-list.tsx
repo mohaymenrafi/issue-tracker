@@ -29,7 +29,7 @@ export function IssueList() {
   const queryClient = useQueryClient()
   const [isFormOpen, setIsFormOpen] = useState(false)
   const [editingIssue, setEditingIssue] = useState<Issue | null>(null)
-  const [deletingId, setDeletingId] = useState<string | null>(null)
+  const [deletingId, setDeletingId] = useState<number | null>(null)
   const [statusFilter, setStatusFilter] = useState<IssueStatus | "">("")
   const [priorityFilter, setPriorityFilter] = useState<IssuePriority | "">("")
 
@@ -47,6 +47,8 @@ export function IssueList() {
     queryFn: () => api.getIssues(filters),
   })
 
+  console.log("issues", issues)
+
   const deleteMutation = useMutation({
     mutationFn: api.deleteIssue,
     onSuccess: () => {
@@ -60,7 +62,7 @@ export function IssueList() {
     setIsFormOpen(true)
   }
 
-  const handleDelete = (id: string) => {
+  const handleDelete = (id: number) => {
     setDeletingId(id)
   }
 

@@ -5,15 +5,15 @@ from datetime import datetime
 
 
 class IssueStatus(str, Enum):
-    OPEN = "open"
-    IN_PROGRESS = "in_progress"
-    CLOSED = "closed"
+    open = "open"
+    in_progress = "in_progress"
+    closed = "closed"
 
 
 class IssuePriority(str, Enum):
-    LOW = "low"
-    MEDIUM = "medium"
-    HIGH = "high"
+    low = "low"
+    medium = "medium"
+    high = "high"
 
 
 class IssueBase(SQLModel):
@@ -22,9 +22,9 @@ class IssueBase(SQLModel):
     description: str = Field(
         min_length=5, max_length=1000, description="The description of the issue")
     priority: IssuePriority = Field(
-        default=IssuePriority.MEDIUM, description="The priority of the issue")
+        default=IssuePriority.medium, description="The priority of the issue")
     status: IssueStatus = Field(
-        default=IssueStatus.OPEN, description="The status of the issue")
+        default=IssueStatus.open, description="The status of the issue")
     created_at: datetime = Field(
         default_factory=datetime.now, description="The date and time the issue was created")
     updated_at: datetime = Field(default_factory=datetime.now,
