@@ -4,10 +4,11 @@ A fullstack issue tracking app built with FastAPI and React, created for learnin
 
 ## Stack
 
-**Backend (`be-ist`)**
+**Backend (`backend`)**
 - Python + FastAPI
-- JSON file-based storage
-- Pydantic for schema validation
+- SQLModel + SQLAlchemy (database URL from environment)
+- Alembic for migrations
+- Pydantic Settings for configuration
 
 **Frontend (`fe-ist`)**
 - React 19 + TypeScript
@@ -20,15 +21,24 @@ A fullstack issue tracking app built with FastAPI and React, created for learnin
 
 ```
 issue-tracker/
-├── be-ist/          # FastAPI backend
+├── backend/                    # FastAPI backend
+│   ├── alembic/                # DB migrations (env, versions, …)
 │   ├── app/
-│   │   ├── middleware/
-│   │   ├── routes/
-│   │   ├── schemas.py
-│   │   └── storage.py
-│   └── main.py
-└── fe-ist/          # React frontend
+│   │   ├── models/             # SQLModel models (e.g. issues)
+│   │   ├── routes/             # API routers (e.g. issues)
+│   │   ├── config.py           # Settings (env, CORS, database URL)
+│   │   ├── database.py         # Engine + session dependency
+│   │   └── main.py             # FastAPI app, CORS, exception handlers
+│   ├── tests/                  # pytest (API tests, fixtures)
+│   ├── alembic.ini
+│   ├── pyproject.toml
+│   └── uv.lock
+└── fe-ist/                     # React frontend
     ├── src/
+    │   ├── components/
+    │   ├── lib/
+    │   ├── App.tsx
+    │   └── main.tsx
     └── ...
 ```
 
@@ -36,12 +46,14 @@ issue-tracker/
 
 ### Backend
 
+Python dependencies are installed with **[uv](https://docs.astral.sh/uv/)** (not `pip`). Install [uv](https://docs.astral.sh/uv/getting-started/installation/) if you do not have it, then:
+
 ```bash
-cd be-ist
-python -m venv .venv
-source .venv/bin/activate
-pip install -r requirements.txt
-python main.py
+cd backend
+uv sync
+# Set DATABASE_URL in `.env` (see `app/config.py`), then apply migrations and run:
+uv run alembic upgrade head
+uv run uvicorn app.main:app --reload --port 8000
 ```
 
 API runs at `http://localhost:8000`
