@@ -32,4 +32,5 @@ async def validation_exception_handler(request: Request, exc: RequestValidationE
 async def generic_exception_handler(request: Request, exc: Exception):
     return JSONResponse(status_code=500, content={'detail': "Internal server error"})
 
+
 app.include_router(issues_router)
