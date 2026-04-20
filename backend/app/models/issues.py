@@ -1,7 +1,9 @@
+from datetime import datetime, timezone
 from enum import Enum
 from typing import Optional
+
+from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
-from datetime import datetime
 
 
 class IssueStatus(str, Enum):
@@ -26,9 +28,15 @@ class IssueBase(SQLModel):
     status: IssueStatus = Field(
         default=IssueStatus.open, description="The status of the issue")
     created_at: datetime = Field(
-        default_factory=datetime.now, description="The date and time the issue was created")
-    updated_at: datetime = Field(default_factory=datetime.now,
-                                 description="The date and time the issue was last updated")
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="The date and time the issue was created",
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
+    updated_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="The date and time the issue was last updated",
+        sa_column=Column(DateTime(timezone=True), nullable=False),
+    )
 
 
 class Issue(IssueBase, table=True):
@@ -47,4 +55,5 @@ class IssueUpdate(SQLModel):
     priority: Optional[IssuePriority] = None
     status: Optional[IssueStatus] = None
     updated_at: Optional[datetime] = Field(
-        default_factory=datetime.now, description="The date and time the issue was last updated")
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="The date and time the issue was last updated")

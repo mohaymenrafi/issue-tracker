@@ -6,6 +6,7 @@ class Settings(BaseSettings):
     app_name: str = "Issue Tracker API"
     allowed_origins: list[str] = ['http://localhost:3000']
     database_url: str
+    secret_key: str
 
 
 settings = Settings()
