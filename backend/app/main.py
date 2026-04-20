@@ -1,10 +1,11 @@
 from contextlib import asynccontextmanager
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
-from app.routes.issues import router as issues_router
 from fastapi.exceptions import RequestValidationError
-from app.config import settings
+from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
+from app.routes.issues import router as issues_router
+from app.routes.auth import router as auth_router
 
 
 @asynccontextmanager
@@ -34,3 +35,4 @@ async def generic_exception_handler(request: Request, exc: Exception):
 
 
 app.include_router(issues_router)
+app.include_router(auth_router)
