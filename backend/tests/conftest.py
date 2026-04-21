@@ -5,6 +5,8 @@ from sqlmodel.pool import StaticPool
 
 from app.main import app
 from app.database import get_session
+from app.models.users import User
+from app.core.auth import create_access_token, hash_password
 
 
 @pytest.fixture(scope="function")
@@ -23,6 +25,22 @@ def test_engine():
 def db_session(test_engine):
     with Session(test_engine) as session:
         yield session
+
+
+@pytest.fixture()
+def auth_user(db_session):
+    user = User(email="test@example.com", username="testuser",
+                name="Test User", hashed_pass=hash_password("testPassword123"))
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture()
+def auth_header(auth_user):
+    token = create_access_token(auth_user.id)
+    return {"Authorization": f"Bearer {token}"}
 
 
 @pytest.fixture()

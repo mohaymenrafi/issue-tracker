@@ -1,4 +1,5 @@
 from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi.security import OAuth2PasswordRequestForm
 from pydantic import BaseModel, EmailStr
 from datetime import datetime, timezone
 from sqlmodel import Field
@@ -52,9 +53,10 @@ def register(body: RegisterRequest, session: Session = Depends(get_session)) -> 
 
 
 @router.post("/login", response_model=TokenResponse, status_code=status.HTTP_200_OK)
-def login(body: LoginRequest, session: Session = Depends(get_session)) -> TokenResponse:
-    user = session.exec(select(User).where(User.email == body.email)).first()
-    if not user or not verify_password(body.password, user.hashed_pass):
+def login(form_data: OAuth2PasswordRequestForm = Depends(), session: Session = Depends(get_session)) -> TokenResponse:
+    user = session.exec(select(User).where(
+        User.email == form_data.username)).first()
+    if not user or not verify_password(form_data.password, user.hashed_pass):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid credentials")
     token = create_access_token(user.id)

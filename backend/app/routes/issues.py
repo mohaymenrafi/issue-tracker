@@ -2,6 +2,8 @@ from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from app.database import get_session
 from app.models.issues import Issue, IssueCreate, IssuePriority, IssueStatus, IssueUpdate
+from app.core.auth import get_current_user
+from app.models.users import User
 
 router = APIRouter(prefix="/api/v1/issues", tags=["issues"])
 
@@ -28,7 +30,11 @@ def get_issues(status: IssueStatus = None, priority: IssuePriority = None, limit
 
 
 @router.post('', response_model=Issue, status_code=status.HTTP_201_CREATED)
-def create_issue(payload: IssueCreate, session: Session = Depends(get_session)):
+def create_issue(
+    payload: IssueCreate,
+    session: Session = Depends(get_session),
+    current_user: User = Depends(get_current_user)
+):
     """Creates a new issue"""
     new_issue = Issue.model_validate(payload)
     session.add(new_issue)
@@ -44,7 +50,7 @@ def get_issue(issue: Issue = Depends(get_issue_or_404)):
 
 
 @router.patch("/{issue_id}", response_model=Issue, status_code=status.HTTP_200_OK)
-def update_issue(payload: IssueUpdate, issue: Issue = Depends(get_issue_or_404), session: Session = Depends(get_session)):
+def update_issue(payload: IssueUpdate, issue: Issue = Depends(get_issue_or_404), session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """Updates an issue by its ID"""
     updates = payload.model_dump(exclude_unset=True)
     issue.sqlmodel_update(updates)
@@ -55,7 +61,7 @@ def update_issue(payload: IssueUpdate, issue: Issue = Depends(get_issue_or_404),
 
 
 @router.delete("/{issue_id}", status_code=status.HTTP_200_OK)
-def delete_issue(issue: Issue = Depends(get_issue_or_404), session: Session = Depends(get_session)):
+def delete_issue(issue: Issue = Depends(get_issue_or_404), session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """Deletes an issue by its ID"""
     session.delete(issue)
     session.commit()
