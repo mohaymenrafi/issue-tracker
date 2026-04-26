@@ -27,6 +27,13 @@ class IssueBase(SQLModel):
         default=IssuePriority.medium, description="The priority of the issue")
     status: IssueStatus = Field(
         default=IssueStatus.open, description="The status of the issue")
+
+
+class Issue(IssueBase, table=True):
+    id: int | None = Field(default=None, primary_key=True)
+    reporter_id: int | None = Field(default=None, foreign_key="user.id")
+    assignee_id: int | None = Field(default=None, foreign_key="user.id")
+    project_id: int | None = Field(default=None, foreign_key="project.id")
     created_at: datetime = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         description="The date and time the issue was created",
@@ -39,12 +46,9 @@ class IssueBase(SQLModel):
     )
 
 
-class Issue(IssueBase, table=True):
-    id: int | None = Field(default=None, primary_key=True)
-
-
 class IssueCreate(IssueBase):
-    pass
+    project_id: int | None = Field(default=None, foreign_key="project.id")
+    assignee_id: int | None = Field(default=None, foreign_key="user.id")
 
 
 class IssueUpdate(SQLModel):
@@ -54,6 +58,3 @@ class IssueUpdate(SQLModel):
         default=None, min_length=5, max_length=1000)
     priority: Optional[IssuePriority] = None
     status: Optional[IssueStatus] = None
-    updated_at: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(timezone.utc),
-        description="The date and time the issue was last updated")

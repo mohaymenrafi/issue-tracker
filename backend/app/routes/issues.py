@@ -1,3 +1,4 @@
+from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, status
 from sqlmodel import Session, select
 from app.database import get_session
@@ -37,6 +38,7 @@ def create_issue(
 ):
     """Creates a new issue"""
     new_issue = Issue.model_validate(payload)
+    new_issue.reporter_id = current_user.id if current_user else None
     session.add(new_issue)
     session.commit()
     session.refresh(new_issue)
@@ -53,6 +55,7 @@ def get_issue(issue: Issue = Depends(get_issue_or_404)):
 def update_issue(payload: IssueUpdate, issue: Issue = Depends(get_issue_or_404), session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
     """Updates an issue by its ID"""
     updates = payload.model_dump(exclude_unset=True)
+    updates["updated_at"] = datetime.now(timezone.utc)
     issue.sqlmodel_update(updates)
     session.add(issue)
     session.commit()
