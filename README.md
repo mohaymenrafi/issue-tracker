@@ -1,4 +1,4 @@
-# Issue Tracker
+# Relay
 
 A fullstack issue tracking app built with FastAPI and React, created for learning purposes.
 
@@ -20,7 +20,7 @@ A fullstack issue tracking app built with FastAPI and React, created for learnin
 ## Project Structure
 
 ```
-issue-tracker/
+relay/
 ├── backend/                    # FastAPI backend
 │   ├── alembic/                # DB migrations (env, versions, …)
 │   ├── app/

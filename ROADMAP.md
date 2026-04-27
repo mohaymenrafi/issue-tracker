@@ -1,4 +1,4 @@
-# Issue Tracker — Full Stack Roadmap
+# Relay — Full Stack Roadmap
 
 **Stack:** FastAPI + PostgreSQL + React 19 + TanStack Router/Query + Tailwind v4  
 **Goal:** Portfolio-ready fullstack app inspired by Linear — core loop: Issues + Projects + AI queries  

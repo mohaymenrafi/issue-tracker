@@ -1,4 +1,4 @@
-# Issue Tracker — Product & Architecture Overview
+# Relay — Product & Architecture Overview
 
 This document describes **what** we are building, **how** the system is shaped, and **where** the roadmap is headed. It is written in the same spirit as internal product and engineering docs you would see in a professional environment.
 
