@@ -6,6 +6,7 @@ from app.core.config import settings
 from fastapi.middleware.cors import CORSMiddleware
 from app.routes.issues import router as issues_router
 from app.routes.auth import router as auth_router
+from app.routes.projects import router as projects_router
 
 
 @asynccontextmanager
@@ -34,5 +35,6 @@ async def generic_exception_handler(request: Request, exc: Exception):
     return JSONResponse(status_code=500, content={'detail': "Internal server error"})
 
 
-app.include_router(issues_router)
 app.include_router(auth_router)
+app.include_router(issues_router)
+app.include_router(projects_router)

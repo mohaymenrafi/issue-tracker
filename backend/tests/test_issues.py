@@ -1,8 +1,4 @@
 
-# Each test function receives `client` as a parameter.
-# pytest sees it matches the fixture name in conftest.py and injects it automatically.
-# `client` already has the test DB wired in — you don't have to do anything extra.
-
 
 def make_issue(client, auth_header, **overrides):
     payload = {

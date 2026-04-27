@@ -8,7 +8,11 @@ from sqlmodel import Session, select
 router = APIRouter(prefix="/api/v1/projects", tags=['projects'])
 
 
-def get_project_or_404(project_id: int, session: Depends(get_session), user: User = Depends(get_current_user)):
+def get_project_or_404(
+    project_id: int,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+):
     project = session.get(Project, project_id)
     if not project:
         raise HTTPException(
@@ -16,7 +20,7 @@ def get_project_or_404(project_id: int, session: Depends(get_session), user: Use
     return project
 
 
-@router.get("", response_model=list[Project])
+@router.get("", response_model=list[Project], status_code=status.HTTP_200_OK)
 def get_projects(limit: int = 10, page: int = 1, sort="created_at", user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     """Retrieves all projects"""
     query = select(Project).where(Project.owner_id == user.id)
@@ -29,8 +33,7 @@ def get_projects(limit: int = 10, page: int = 1, sort="created_at", user: User =
 @router.post("", response_model=Project, status_code=status.HTTP_201_CREATED)
 def create_project(payload: ProjectCreate, user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     """Creates a new project"""
-    new_project = Project.model_validate(payload)
-    new_project.owner_id = user.id
+    new_project = Project(**payload.model_dump(), owner_id=user.id)
     session.add(new_project)
     session.commit()
     session.refresh(new_project)
@@ -44,12 +47,18 @@ def get_project(project: Project = Depends(get_project_or_404)):
 
 
 @router.patch("/{project_id}", response_model=Project, status_code=status.HTTP_200_OK)
-def update_project(payload: ProjectUpdate = Depends, session: Session = Depends(get_session), user: User = Depends(get_current_user), project: Project = Depends(get_project_or_404)):
+def update_project(
+    payload: ProjectUpdate,
+    session: Session = Depends(get_session),
+    user: User = Depends(get_current_user),
+    project: Project = Depends(get_project_or_404),
+):
     """Updates an project by its ID"""
     updates = payload.model_dump(exclude_unset=True)
     if project.owner_id != user.id:
         raise HTTPException(
-            status=status.HTTP_403_FORBIDDEN, detail="Only the project owner can update the project"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the project owner can update the project",
         )
     project.sqlmodel_update(updates)
     session.add(project)
@@ -63,7 +72,8 @@ def delete_project(project: Project = Depends(get_project_or_404), user: User = 
     """Deletes an issue by its ID"""
     if project.owner_id != user.id:
         raise HTTPException(
-            status=status.HTTP_403_FORBIDDEN, detail="Only the project owner can delete the project"
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Only the project owner can delete the project",
         )
     session.delete(project)
     session.commit()

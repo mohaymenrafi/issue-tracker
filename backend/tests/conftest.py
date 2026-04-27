@@ -44,6 +44,26 @@ def auth_header(auth_user):
 
 
 @pytest.fixture()
+def other_user(db_session):
+    user = User(
+        email="other@example.com",
+        username="otheruser",
+        name="Other User",
+        hashed_pass=hash_password("testPassword123"),
+    )
+    db_session.add(user)
+    db_session.commit()
+    db_session.refresh(user)
+    return user
+
+
+@pytest.fixture()
+def other_auth_header(other_user):
+    token = create_access_token(other_user.id)
+    return {"Authorization": f"Bearer {token}"}
+
+
+@pytest.fixture()
 def client(db_session):
     def override_get_session():
         yield db_session
