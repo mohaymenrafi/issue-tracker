@@ -1,4 +1,5 @@
-from fastapi import APIRouter, Depends, HTTPException, status
+from typing import Literal
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from app.models.projects import Project, ProjectCreate, ProjectUpdate
 from app.models.users import User
 from app.database import get_session
@@ -6,6 +7,20 @@ from app.core.auth import get_current_user
 from sqlmodel import Session, select
 
 router = APIRouter(prefix="/api/v1/projects", tags=['projects'])
+
+ProjectSort = Literal[
+    'created_at',
+    '-created_at',
+]
+
+
+def _project_order(sort: ProjectSort):
+    """Return (primary_column, descending) for Project"""
+    mapping = {
+        'created_at': (Project.created_at, False),
+        '-created_at': (Project.created_at, True),
+    }
+    return mapping[sort]
 
 
 def get_project_or_404(
@@ -21,12 +36,18 @@ def get_project_or_404(
 
 
 @router.get("", response_model=list[Project], status_code=status.HTTP_200_OK)
-def get_projects(limit: int = 10, page: int = 1, sort="created_at", user: User = Depends(get_current_user), session: Session = Depends(get_session)):
+def get_projects(limit: int = Query(10, ge=1, le=100), page: int = Query(1, ge=1), sort: ProjectSort = "-created_at", user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     """Retrieves all projects"""
+    offset = (page - 1) * limit
     query = select(Project).where(Project.owner_id == user.id)
-    if sort:
-        query.order_by(Project.created_at.desc())
-    query.offset((page - 1) * limit).limit(limit)
+
+    col, descending = _project_order(sort)
+    if descending:
+        query = query.order_by(col.desc(), Project.id.desc())
+    else:
+        query = query.order_by(col.asc(), Project.id.asc())
+
+    query = query.offset(offset).limit(limit)
     return session.exec(query).all()
 
 
@@ -69,7 +90,7 @@ def update_project(
 
 @router.delete("/{project_id}", status_code=status.HTTP_200_OK)
 def delete_project(project: Project = Depends(get_project_or_404), user: User = Depends(get_current_user),  session: Session = Depends(get_session)):
-    """Deletes an issue by its ID"""
+    """Deletes an project by its ID"""
     if project.owner_id != user.id:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
