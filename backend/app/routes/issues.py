@@ -1,9 +1,9 @@
 from typing import Literal
 from datetime import datetime, timezone
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from sqlmodel import Session, select
+from sqlmodel import Session, func, select
 from app.database import get_session
-from app.models.issues import Issue, IssueCreate, IssuePriority, IssueStatus, IssueUpdate
+from app.models.issues import Issue, IssueCreate, IssueListResponse, IssuePriority, IssueStatus, IssueUpdate
 from app.core.auth import get_current_user
 from app.models.users import User
 from app.models.projects import Project
@@ -49,16 +49,31 @@ def get_issue_or_404(issue_id: int, session: Session = Depends(get_session)) -> 
     return issue
 
 
-@router.get('', response_model=list[Issue])
-def get_issues(status: IssueStatus = None, priority: IssuePriority = None, limit: int = Query(10, ge=1, le=100), page: int = Query(1, ge=1), sort: IssueSort = '-created_at', session: Session = Depends(get_session)):
+@router.get('', response_model=IssueListResponse)
+def get_issues(issue_status: IssueStatus = Query(default=None, alias='status'), priority: IssuePriority = None, limit: int = Query(default=10, ge=1, le=100), page: int = Query(default=1, ge=1), sort: IssueSort = '-created_at', project_id: str | None = Query(default=None), session: Session = Depends(get_session)):
     """Retrieves all issues"""
-    query = select(Issue)
     offset = (page - 1) * limit
 
-    if status:
-        query = query.where(Issue.status == status)
+    filters = []
+
+    if issue_status:
+        filters.append(Issue.status == issue_status)
     if priority:
-        query = query.where(Issue.priority == priority)
+        filters.append(Issue.priority == priority)
+    if project_id == 'null':
+        filters.append(Issue.project_id.is_(None))
+    elif project_id is not None:
+        try:
+            filters.append(Issue.project_id == int(project_id))
+        except ValueError:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail="project_id must be an integer or null"
+            )
+
+    query = select(Issue).where(*filters)
+    total_query = select(func.count()).select_from(Issue).where(*filters)
+    total = session.exec(total_query).one()
 
     col, descending = _issue_order(sort)
     if descending:
@@ -67,7 +82,11 @@ def get_issues(status: IssueStatus = None, priority: IssuePriority = None, limit
         query = query.order_by(col.asc(), Issue.id.asc())
 
     query = query.offset(offset).limit(limit)
-    return session.exec(query).all()
+
+    return {
+        "issues": session.exec(query).all(),
+        "total": total
+    }
 
 
 @router.post('', response_model=Issue, status_code=status.HTTP_201_CREATED)
