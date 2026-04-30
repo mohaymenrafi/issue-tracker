@@ -1,5 +1,6 @@
 from datetime import datetime, timezone
 
+from pydantic import BaseModel, EmailStr
 from sqlalchemy import Column, DateTime
 from sqlmodel import Field, SQLModel
 
@@ -14,3 +15,17 @@ class User(SQLModel, table=True):
         default_factory=lambda: datetime.now(timezone.utc),
         sa_column=Column(DateTime(timezone=True), nullable=False),
     )
+
+
+class UserResponse(BaseModel):
+    id: int
+    email: EmailStr
+    username: str
+    name: str | None = None
+    created_at: datetime = Field(
+        default_factory=lambda: datetime.now(timezone.utc))
+
+
+class UserUpdate(BaseModel):
+    name: str | None
+    username: str | None

@@ -5,7 +5,7 @@ from datetime import datetime, timezone
 from sqlmodel import Field
 from app.database import get_session
 from sqlmodel import Session, select
-from app.models.users import User
+from app.models.users import User, UserResponse
 from app.core.auth import create_access_token, hash_password, verify_password
 
 router = APIRouter(prefix="/api/v1/auth", tags=["auth"])
@@ -26,15 +26,6 @@ class LoginRequest(BaseModel):
 class TokenResponse(BaseModel):
     access_token: str
     token_type: str = "bearer"
-
-
-class UserResponse(BaseModel):
-    id: int
-    email: EmailStr
-    username: str
-    name: str | None = None
-    created_at: datetime = Field(
-        default_factory=lambda: datetime.now(timezone.utc))
 
 
 @router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
