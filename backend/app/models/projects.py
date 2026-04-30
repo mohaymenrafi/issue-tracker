@@ -28,3 +28,8 @@ class ProjectCreate(ProjectBase):
 class ProjectUpdate(SQLModel):
     name: Optional[str] = Field(default=None, min_length=3, max_length=100)
     description: Optional[str] = Field(default=None, max_length=1000)
+
+
+class ProjectListResponse(SQLModel):
+    projects: list[Project]
+    total: int

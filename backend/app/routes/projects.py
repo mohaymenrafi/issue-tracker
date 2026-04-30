@@ -1,10 +1,13 @@
 from typing import Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
-from app.models.projects import Project, ProjectCreate, ProjectUpdate
+from app.models.projects import Project, ProjectCreate, ProjectListResponse, ProjectUpdate
 from app.models.users import User
+from app.models.issues import Issue, IssueListResponse
 from app.database import get_session
 from app.core.auth import get_current_user
 from sqlmodel import Session, select
+from sqlalchemy import func
+
 
 router = APIRouter(prefix="/api/v1/projects", tags=['projects'])
 
@@ -35,11 +38,14 @@ def get_project_or_404(
     return project
 
 
-@router.get("", response_model=list[Project], status_code=status.HTTP_200_OK)
+@router.get("", response_model=ProjectListResponse, status_code=status.HTTP_200_OK)
 def get_projects(limit: int = Query(10, ge=1, le=100), page: int = Query(1, ge=1), sort: ProjectSort = "-created_at", user: User = Depends(get_current_user), session: Session = Depends(get_session)):
     """Retrieves all projects"""
     offset = (page - 1) * limit
     query = select(Project).where(Project.owner_id == user.id)
+
+    total = session.exec(select(func.count()).select_from(
+        Project).where(Project.owner_id == user.id)).one()
 
     col, descending = _project_order(sort)
     if descending:
@@ -48,7 +54,10 @@ def get_projects(limit: int = Query(10, ge=1, le=100), page: int = Query(1, ge=1
         query = query.order_by(col.asc(), Project.id.asc())
 
     query = query.offset(offset).limit(limit)
-    return session.exec(query).all()
+    return {
+        "projects": session.exec(query).all(),
+        "total": total,
+    }
 
 
 @router.post("", response_model=Project, status_code=status.HTTP_201_CREATED)
@@ -99,3 +108,19 @@ def delete_project(project: Project = Depends(get_project_or_404), user: User = 
     session.delete(project)
     session.commit()
     return {"message": "Project deleted successfully"}
+
+
+@router.get("/{project_id}/issues", status_code=status.HTTP_200_OK, response_model=IssueListResponse)
+def get_issues_by_project(current_user: User = Depends(get_current_user), session: Session = Depends(get_session), project: Project = Depends(get_project_or_404)):
+    """Retrieves all issues by a project"""
+    # only the project member can view the issues of this project, which will be implemented in the next phase when project members are implemented
+
+    # need to work on pagination, sorting and filtering
+    total = session.exec(select(func.count()).select_from(
+        Issue).where(Issue.project_id == project.id)).one()
+
+    query = select(Issue).where(Issue.project_id == project.id)
+    return {
+        "issues": session.exec(query).all(),
+        "total": total
+    }
