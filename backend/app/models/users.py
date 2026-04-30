@@ -27,5 +27,5 @@ class UserResponse(BaseModel):
 
 
 class UserUpdate(BaseModel):
-    name: str | None
-    username: str | None
+    name: str | None = None
+    username: str | None = None
