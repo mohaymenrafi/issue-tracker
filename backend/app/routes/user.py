@@ -1,5 +1,6 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlmodel import Session, select
+from re import search
+from fastapi import APIRouter, Depends, HTTPException, Query, status
+from sqlmodel import Session, col, or_, select
 
 from app.models.users import User, UserResponse, UserUpdate
 from app.core.auth import get_current_user
@@ -33,3 +34,11 @@ def update_current_user(payload: UserUpdate, current_user: User = Depends(get_cu
     session.commit()
     session.refresh(current_user)
     return current_user
+
+
+@router.get('/search', status_code=status.HTTP_200_OK, response_model=list[UserResponse])
+def get_all_users(q: str = Query(..., min_length=1), session: Session = Depends(get_session), current_user: User = Depends(get_current_user)):
+    search = f"%{q}%"
+    query = select(User).where(User.id != current_user.id,
+                               or_(col(User.username).ilike(search), col(User.email).ilike(search))).limit(10)
+    return session.exec(query).all()
