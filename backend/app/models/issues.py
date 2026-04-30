@@ -58,3 +58,8 @@ class IssueUpdate(SQLModel):
         default=None, min_length=5, max_length=1000)
     priority: Optional[IssuePriority] = None
     status: Optional[IssueStatus] = None
+
+
+class IssueListResponse(SQLModel):
+    issues: list[Issue]
+    total: int
